@@ -1,0 +1,140 @@
+Audit avancé Active Directory + Azure : repository GitHub clé-en-main
+Résumé exécutif
+Ce projet fournit une solution clé-en-main pour mener un audit avancé et complet d’un environnement Active Directory (AD) hybride (on-premises + Azure). Il comprend une structure de repo GitHub avec méthodologie détaillée (phases, rôles, livrables, planning), des checklists exhaustives (200+ contrôles) organisées par sections (AD, Azure AD, hybrid, etc.), des scripts automatisés (PowerShell, Azure CLI, Python) pour collecter les données et générer les rapports, des diagrammes et schémas (PNG/SVG + code Mermaid) illustrant l’architecture et les chemins d’attaque, ainsi que des templates de rapport (rapport final, executive summary, plan de remédiation, tickets CSV/JSON, playbooks de détection, etc.).
+Le repo inclut aussi les bonnes pratiques de publication (README professionnel, licence open-source, GitHub Actions pour CI/CD, modèles de PR/Issue, GitHub Pages pour la doc, code de conduite, security policy, etc.).
+Ce kit d’audit s’appuie sur les référentiels officiels Microsoft (Azure AD/Entra ID, AD DS), les recommandations Zero Trust, ainsi que sur les pratiques avancées Red Team et Mandiant (BloodHound, SharpHound, PingCastle, AADInternals). Il permet à une équipe de sécurité (Pentesters/Red Team, Auditeurs Big4, Azure SecOps) de réaliser un audit rigoureux, reproduisant les techniques d’attaquants tout en évaluant la posture de défense et détection.
+Les sections suivantes détaillent la structure du dépôt, la méthodologie d’audit, les checklists de contrôles, les scripts automatisés, les diagrammes, les templates, et les consignes de publication GitHub.
+Structure du dépôt GitHub
+Le repo est organisé en dossiers thématiques, par exemple :
+Chaque dossier est accompagné d’un README explicatif. La structure est conçue pour être claire et modulaire : les équipes peuvent facilement naviguer, personnaliser les checklists ou réutiliser les scripts.
+Méthodologie d’audit détaillée (Big4/Mandiant)
+L’audit suit une approche en phases itératives avec des rôles et livrables précis, inspirée des méthodologies Red Team/Mandiant/Big4 :
+Phase 1 – Planification & Kickoff :
+Objectifs : définir le périmètre (domains, forêts AD, Azure tenant, apps), recueillir architecture/exigences, établir gouvernance projet.
+Livrables : Charte d’audit, diagramme d’architecture AD+Azure (exemple ci-dessous), planning, accès/credentials, équipe projet (penetration lead, AD admin, cloud expert, etc.).
+Durée : 2–3 jours.
+Phase 2 – Inventaire & Cartographie AD On-Prem :
+Objectifs : inventerier l’AD (DCs, OUs, sites, FSMSO, trusts, GPOs), identifier comptes et groupes, collecter logs AD.
+Livrables : Rapport d’inventaire AD (DC health, versions OS, patch, services), liste utilisateurs/groupes/classements, diagrammes de forêts et trusts.
+Rôle clé : Administrateur AD / support Microsoft.
+Durée : 3–5 jours.
+Phase 3 – Pentest & Enumérations AD On-Prem :
+Objectifs : découverte de vulnérabilités AD (ACLs abusifs, comptes SPN, délégations, scripts GPO), simulation d’attaques (Kerberoast, DCSync, Pass-the-Hash, Pass-the-Ticket).
+Outils : BloodHound/SharpHound pour mapper les chemins d’attaque[1], PingCastle pour un état de santé global[2], PowerView/Impacket pour tests pratiques.
+Livrables : Diagramme graph attack paths (BloodHound), rapport d’escalation possible, relevés (ex : comptes Kerberoastables, délégations non constr.), liste de failles AD (ex : « GenericAll » ou « DCSync » dangereux).
+Rôle clé : Pentester AD/Red Team.
+Durée : 5–7 jours.
+Phase 4 – Attack Path Modeling :
+Objectifs : utiliser BloodHound pour cartographier formellement les chemins d’attaque vers les comptes Domain Admin. Évaluer la portée d’un compromis.
+Livrables : Graphes BloodHound (ligatures d’attaque), séances de revue (ex: shortest path to Domain Admin), priorisation des chemins les plus critiques.
+Rôle clé : Expert BloodHound/Attaquant.
+Durée : 2–3 jours.
+Phase 5 – Audit Azure AD / Entra ID :
+Objectifs : analyser la sécurité identités cloud. Contrôler la configuration Azure AD (MFA, Conditional Access, roles, applications/service principals). Vérifier les connexions SSO/hybrid (AD Connect).
+Points clés : S’assurer que les comptes administrateurs (Global Admin, etc.) ont MFA activé (quasi-obligatoire)[3]; vérifier et durcir les conditions d’accès (par ex. bloquer l’authentification legacy, configurer Conditional Access)[4]; lister les applications en API avec privilèges et logs d’audit Azure AD.
+Livrables : Rapport de sécurité Azure AD (exposés, risques: comptes sans MFA, apps trop permissives, bypass potentiels), matrices d’identité cloud vs on-prem (ex: comptes synchronisés, unité d’admin, etc.).
+Rôle clé : Expert Azure/Entra ID.
+Durée : 3–5 jours.
+Phase 6 – Audit Hybrid Identity (AD Connect) :
+Objectifs : examen de l’infrastructure Hybrid Identity. Vérifier la santé et la sécurité du service Azure AD Connect (permissions du compte de synchronisation, config PTA/PHS/SSO). S’assurer qu’un compromis on-prem ne bascule pas facilement sur le cloud.
+Livrables : Diagramme du flux AD Connect (comme ci-dessous), liste de recommandations (ex: filtrage des OU, mode staging, isoler le serveur AD Connect).
+Rôle clé : Spécialiste Hybrid.
+Durée : 1–2 jours.
+Phase 7 – Audit Monitoring et Détection :
+Objectifs : évaluer la couverture de détection. Vérifier audit logs (AD, Azure AD, Windows Event, Azure Monitor/Sentinel). Tester alertes existantes (Defender for Identity, SIEM). Suggérer loggings manquants (audit GPO, journaux de domaine, modifications de schéma, etc.).
+Livrables : Recommandations de logs (systèmes et logons critiques), playbooks de détection (ex: Kerberoasting, changements de rôle admin, tentatives DCShadow), configuration de base Sentinel/Analytics.
+Rôle clé : Analyste SOC / Engineer SIEM.
+Durée : 2–3 jours.
+Phase 8 – Rapport Final et Remédiation :
+Objectifs : consolider les findings, prioriser les risques (voir matrice ci-dessous). Rédiger les livrables finaux.
+Livrables : Rapport d’audit détaillé (exposé des vulnérabilités, preuves, screenshots), Executive Summary pour la direction, plan de remédiation (actions recommandées hiérarchisées), tickets de correctif (CSV/JSON) à intégrer dans le système ITSM. Présentation finale.
+Durée : 3–5 jours.
+<table> <thead> <tr><th>Phase</th><th>Objectif</th><th>Livrables</th><th>Rôle clé</th><th>Durée estimée</th></tr> </thead> <tbody> <tr><td>1. Planification & Scope</td><td>Définir périmètre, accès, équipe projet</td><td>Charte d'audit, architecture cible</td><td>Lead / Architecte</td><td>2–3j</td></tr> <tr><td>2. Inventaire & Cartographie AD</td><td>Inventaire DC, domaines, GPO, ADCS</td><td>Rapport d'inventaire, diagrammes AD</td><td>Admin AD</td><td>3–5j</td></tr> <tr><td>3. Pentest & Enumeration</td><td>Enumérations internes, tests privesc</td><td>Graph AD/BloodHound, logs d'exploit</td><td>Red Team AD</td><td>5–7j</td></tr> <tr><td>4. Modélisation Attack Paths</td><td>Identifier chemins d'attaque vers Domain Admin</td><td>Graphes BloodHound, documentation Gap</td><td>Red Team</td><td>2–3j</td></tr> <tr><td>5. Audit Azure AD</td><td>Analyse MFA/CA/apps/roles Azure</td><td>Rapport Azure AD (MFA, CA, applications)</td><td>Expert Azure</td><td>3–5j</td></tr> <tr><td>6. Audit Hybrid Identity</td><td>Vérifier AD Connect (sync, PTA, SSO)</td><td>Rapport AD Connect, filtres</td><td>Hybrid Sec.</td><td>1–2j</td></tr> <tr><td>7. Monitoring & Détection</td><td>Evaluer audit logs, SIEM, alertes (Sentinel, DfI)</td><td>Playbooks détection, recommandations SIEM</td><td>SOC/Detection</td><td>2–3j</td></tr> <tr><td>8. Rapport & Remédiation</td><td>Synthèse findings, plan correctif</td><td>Rapport final + summary + tickets</td><td>Lead/Consultant</td><td>3–5j</td></tr> </tbody> </table>
+Exemple de diagramme d’architecture (AD + Azure AD Connect) :
+
+Figure : Architecture d’authentification hybride (Azure AD Connect avec Pass-through Auth). Les requêtes de connexion (User sign-in) transitent du client vers Azure AD, puis l’agent on-premises les valide auprès du contrôleur de domaine. L’outil AAD-Internals peut intercepter ces requêtes (attack path illustré)[5].
+Checklists d’audit (200+ contrôles)
+Les contrôles sont classés par domaine. Chacun est documenté en MD et JSON pour faciliter l’automatisation. Par exemple, dans checklists/ad-architecture.md :
+## Section : Architecture AD
+- [ ] **AD-ARCH-01** : Inventorier tous les Domaines et Forêts AD (Contrôle Critique).  
+- [ ] **AD-ARCH-02** : Vérifier les rôles FSMO (Emfs Schema, PDC, RID, etc.).  
+- [ ] **AD-ARCH-03** : Contrôler la configuration des contrôleurs de domaine (versions, patchs) – *Haut risque si obsolète*.  
+En JSON (pour intégration machine) :
+[
+  { "id": "AD-ARCH-01", "section": "Architecture AD", "description": "Identifier tous les Domaines et Forêts Active Directory", "severity": "Critique" },
+  { "id": "AD-ARCH-02", "description": "Vérifier les rôles FSMO et DCs", "severity": "Élevé" }
+]
+Chaque section contient ~10–40 contrôles. Par exemple :
+Classification des risques (exemple) :
+Les checklists sont alignées sur les bonnes pratiques Microsoft (ex : limiter les comptes synchronisés[6], appliquer MFA[7]) et les modules d’audit de PingCastle[2] ou BloodHound. Par exemple, Microsoft rappelle que les trois groupes AD les plus privilégiés (Enterprise Admins, Domain Admins, Administrators) doivent être particulièrement protégés[8], et recommande un modèle least-privilege pour les administrateurs[9]. Ces principes guident la création des contrôles (par ex. contrôle du membership de Domain Admins).
+Scripts automatisés
+Plusieurs scripts facilitent et automatisent la collecte de données et la génération de rapports. Les exemples suivants sont fournis (avec tests unitaires intégrés et GitHub Actions de CI en mode lecture seule) :
+Par exemple, collect-ad-info.ps1 utilise les cmdlets AD : Get-ADDomain, Get-ADForest, Get-ADUser, etc., pour exporter les objets AD dans des CSV. Ce script doit être exécuté avec un compte disposant des droits en lecture sur l’AD (souvent Domain Admin). azure-audit.ps1 peut utiliser le module AzureAD ou Microsoft.Graph pour interroger les objets Entra ID (utilisateurs, rôles, policies).
+Précautions : Tous les scripts doivent être lancés en mode lecture seule (ex: utiliser -WhatIf pour les PS) et testés en lab avant usage. Des tests Pester (PowerShell) ou pytest (Python) valident leur bon fonctionnement sur des données fictives. Le CI GitHub déclenche ces tests à chaque push, garantissant que les scripts sont non-destructifs.
+Diagrammes et visualisations
+Le repo inclut des diagrammes PNG/SVG et leurs sources (Mermaid ou draw.io) pour illustrer : l’architecture hybride AD/Azure, les workflows d’authentification, et les chemins d’attaque (attack paths). Par exemple :
+
+Figure : Attack Path exemple – Pass-Through Authentication compromis. Le module AAD-Internals (Install-AADIntPTASPY) agit en man-in-the-middle du processus PTA (Azure AD ↔ AD DS), capturant les mots de passe utilisateurs[5]. La figure montre comment l’outil intercepte les requêtes d’authentification (flèches rouges) et enregistre les mots de passe en clair (cf. Figure suivante).
+
+Figure : Exfiltration de mots de passe via AAD-Internals. Capture d’écran de PowerShell montrant le décodage du fichier PTASpy.csv, révélant le mot de passe en clair (“ThisIsMyOnPremPW”)[10]. Un tel log est produit sur le serveur AD Connect dès qu’AAD-Internals s’exécute, illustrant le danger de ce backdoor cloud.
+D’autres diagrammes incluent, par exemple, le schéma de synchronisation AD Connect (entrepôts connectés vers Metaverse), ou un flowchart des phases d’audit (Mermaid). Ces visuels facilitent la compréhension des équipes et la communication des résultats. Les sources Mermaid sont fournies dans le dossier diagrams/ pour permettre modifications et export.
+Templates de rapports et playbooks
+Des modèles de documents structurés sont disponibles pour uniformiser la documentation :
+- Rapport d’audit (audit-report-template.md) : sections standard (contexte, architecture, résumé exécutif, findings, tableau de risques, remédiations, annexes). Exemple d’usage avec données fictives est inclus.
+- Executive Summary : version résumée du rapport pour le management (objectifs, score de sécurité, principaux risques et actions prioritaires).
+- Plan de remédiation : format tabulaire (contrôle, gravité, recommandation, responsable).
+- Tickets CSV/JSON : export des findings critiques au format CSV ou JSON pour import dans un outil ITSM.
+- Playbooks de détection : procédures et actions (pouvant être YAML ou Markdown) associées à chaque type d’attaque (Kerberoast, DCShadow, etc.) en mode SIEM/Defender.
+Exemple (rapport final) :
+# Rapport d’audit AD+Azure – Société X
+
+## 1. Contexte et Périmètre  
+- Domaines AD analysés : CONTOSO.LOCAL (2 DCs), SALES.LOCAL  
+- Azure Tenant : contoso.onmicrosoft.com (synchro AD Connect)  
+- Objectifs : évaluer sécurité AD DS et Entra ID (niveau Red Team)
+
+## 2. Summary exécutif  
+*Points clés :* 3 vulnérabilités critiques (DCSync possible, Kerberoast à risque), 5 recommendations critiques (activer MFA, limiter AD Connect sync, etc.)...
+
+## 3. Découpage des findings  
+| Contrôle | Gravité | Observation | Recommandation |
+|---|---|---|---|
+| AD-SEC-01: DCSync rights sur DC01 | Critique | GT account **svc-backup** a right DCSync sur DC01 | Retirer la permission `Replicating Directory Changes` |
+
+*(liste complète en annexe)*
+
+## 4. Chemins d’attaque (BloodHound)  
+- Graph attack path: UserA → ServerAdmin → Domain Admins (via ACL DCSync)  
+- Recommandation: supprimer les ACL *GenericAll* sur le compte ServerAdmin.
+
+## 5. Matrice de risques et priorités  
+*(voir section Checklists ci-dessus)*  
+
+## 6. Plan de remédiation  
+1. [Critique] Désactiver pass-through auth ou installer AADConnect en writeback avec filtering[6].  
+2. [Élevé] Restreindre membres de Enterprise Admins/Domain Admins (principe least-privilege)[8].  
+3. [Élevé] Activer MFA sur tous les Global/AD Admins (reporting d’échecs d’auth).  
+4. [Moyen] ...  
+Plusieurs templates (issues, playbooks) sont adaptés de frameworks Mandiant et best practices Microsoft, pour une remise directe en production.
+Publication sur GitHub
+Pour un usage en équipe, nous suggérons :
+- Repo GitHub privé ou public : créer un dépôt (ex: audit-ad-azure) avec la structure ci-dessus.
+- Branches : main (prod), develop (intégration), docs, scripts.
+- CI/CD : GitHub Actions pour valider les scripts (Pester, pytest), générer la doc Mermaid en PNG (via mermaid CLI), et tester la génération du checklist (MD/JSON).
+- GitHub Pages : héberger la documentation statique (README, méthodologie, guides outils) via Pages.
+- Templates : ajouter sous .github/ un modèle d’Issue (bugfix ou finding de sécurité), modèle de PR (champs : description, impact, tests).
+- Licence : MIT (permet réutilisation) ou CC-BY pour la documentation, à choisir selon politique interne.
+- Security Policy & Code of Conduct : ajouter pour la gouvernance open-source.
+En résumé, ce dépôt fournit une solution complète pour l’audit AD+Azure : méthodologie structurée, checklists normalisées, scripts prêts-à-l’emploi, et tous les artefacts pour un workflow professionnel de pentest/détection, conforme aux standards Microsoft et aux approches Red Team/Mandiant.
+Sources et références officielles : Guides Microsoft sur la sécurité AD[8][9] et Azure AD[6][11], publications Mandiant sur AD/Azure[5][10], documentation BloodHound (SpecterOps)[1] et PingCastle[2]. Ces sources ont orienté la conception des contrôles et des recommandations du repo.
+
+[1] Introduction to BloodHound - SpecterOps
+https://bloodhound.specterops.io/get-started/introduction
+[2] PingCastle Standard and Basic User Guide | Netwrix Product Documentation
+https://docs.netwrix.com/docs/pingcastle/3_5
+[3] [5] [7] [10] Detecting Microsoft 365 and Azure Active Directory Backdoors | Mandiant | Google Cloud Blog
+https://cloud.google.com/blog/topics/threat-intelligence/detecting-microsoft-365-azure-active-directory-backdoors
+[4] [6] [11] Azure identity & access security best practices | Microsoft Learn
+https://learn.microsoft.com/en-us/azure/security/fundamentals/identity-management-best-practices
+[8] [9] Best practices for securing Active Directory | Microsoft Learn
+https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/best-practices-for-securing-active-directory
