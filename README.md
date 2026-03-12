@@ -3,75 +3,60 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Audit Status](https://img.shields.io/badge/Audit-Ready-green.svg)](#)
 
-Ce projet fournit une solution **clé-en-main** pour mener un audit avancé et complet d’un environnement **Active Directory (AD)** hybride (*on-premises + Azure*).
+## 📝 Executive Summary
+Ce rapport rassemble une collection de ressources et d’outils pour conduire un audit avancé d’**Active Directory (AD) hybride sur Azure**. Il propose une structure de dépôt GitHub prête à l’emploi, une méthodologie inspirée des pratiques **Big4/Mandiant**, des checklists détaillées (200+ contrôles), et des scripts automatisés.
 
 ![Architecture d'Audit](assets/architecture.png)
-*Figure 1: Concept d'Architecture d'Audit Hybride AD & Azure.*
 
 ---
 
-## 🚀 Fonctionnalités Clés
+## 🛠️ Outils Recommandés (Top Tiers)
 
-- **Méthodologie Détaillée** : 8 phases inspirées des standards Mandiant/Big4.
-- **Checklists Exhaustives** : Plus de 200 points de contrôle (AD, Entra ID, Hybride).
-- **Automatisation** : Scripts PowerShell, Azure CLI et Python pour la collecte de données.
-- **Visualisation** : Diagrammes Attack Path et schémas d'architecture.
-- **Templates de Rapports** : Modèles prêts à l'emploi (Executive Summary, Remédiation).
+| Outil | Description | Target |
+| :--- | :--- | :--- |
+| **Prowler** | Audit de conformité multi-cloud (CIS, NIST). | Azure/Multi-Cloud |
+| **BloodHound CE** | Analyse graphique des chemins d'attaque. | AD / Entra ID |
+| **AADInternals** | Administration et extraction de secrets (PTA/PHS). | Entra ID / M365 |
+| **PingCastle** | État de santé et sécurité Active Directory. | AD On-Prem |
 
----
-
-## 🗺️ Méthodologie d'Audit (8 Phases)
-
-Le kit d'audit suit une approche itérative rigoureuse :
-
-1.  **Planification & Kickoff** (2-3 jours)
-2.  **Inventaire AD On-Prem** (3-5 jours)
-3.  **Pentest & Énumérations** (5-7 jours)
-4.  **Attack Path Modeling** (2-3 jours)
-5.  **Audit Azure AD / Entra ID** (3-5 jours)
-6.  **Audit Hybrid Identity** (1-2 jours)
-7.  **Monitoring & Détection** (2-3 jours)
-8.  **Rapport & Remédiation** (3-5 jours)
-
-![Phases de l'Audit](assets/phases.png)
-
-[Consulter la méthodologie détaillée dans docs/methodology.md](docs/methodology.md)
+[Découvrir tous les outils dans docs/tools.md](docs/tools.md)
 
 ---
 
-## 🔍 Visualisation des Chemins d'Attaque
+## 🧭 Navigation dans le Repository
 
-Grâce à BloodHound et SharpHound, nous cartographions les chemins d'escalade possibles vers les privilèges de type `Domain Admin`.
-
-![Attack Path](assets/attack_path.png)
-*Figure 2: Exemple de visualisation de chemin d'attaque (Attack Path).*
+- **[docs/methodology.md](docs/methodology.md)** : Méthodologie en 8 phases et hypothèses d'audit.
+- **[docs/resources.md](docs/resources.md)** : Plus de 30+ liens vers des tutoriels, blogs et docs Microsoft.
+- **[docs/playbooks.md](docs/playbooks.md)** : Analyses d'attaques (MFA Bypass, OAuth, etc.).
+- **[checklists/](checklists/)** : Points de contrôle en format Markdown et JSON.
 
 ---
 
-## 📋 Checklists de Contrôle
+## 📊 Flux d'Audit (Mermaid)
 
-Les contrôles sont organisés par domaines critiques :
-
-- **Architecture AD** : DCs, FSMO, Trusts.
-- **Identités Cloud** : MFA, Conditional Access, Roles Entra ID.
-- **Infrastructure Hybride** : Azure AD Connect, PHS/PTA.
-
-[Voir toutes les checklists dans checklists/](checklists/)
+```mermaid
+flowchart LR
+    subgraph Audit Workflow
+        Recon[Reconnaissance] --> Collect[Collecte de données]
+        Collect --> Analyse
+        Analyse --> Reporting
+        Reporting --> Remediation
+    end
+    Recon ---|BloodHound, AzureHound| Collect
+    Collect ---|Logs Azure, Graph API| Analyse
+    Analyse ---|Checklists, Risk Matrix| Reporting
+```
 
 ---
 
 ## 🛠️ Installation & Usage rapide
-
-Pour télécharger et initialiser ce repository localement, utilisez la commande suivante :
 
 ```powershell
 git clone https://github.com/valentinowyhnel/Audit-Azure-check.git
 cd Audit-Azure-check
 ```
 
-### Script de Téléchargement Direct
-Si vous n'avez pas Git installé, vous pouvez utiliser ce script PowerShell pour télécharger le kit complet :
-
+### Téléchargement Direct (sans Git)
 ```powershell
 Invoke-WebRequest -Uri "https://github.com/valentinowyhnel/Audit-Azure-check/archive/refs/heads/main.zip" -OutFile "Audit-Azure-check.zip"; Expand-Archive -Path "Audit-Azure-check.zip" -DestinationPath "."
 ```
@@ -79,9 +64,4 @@ Invoke-WebRequest -Uri "https://github.com/valentinowyhnel/Audit-Azure-check/arc
 ---
 
 ## 📄 Licence
-
-Distribué sous la licence MIT. Voir `LICENSE` pour plus d'informations.
-
----
-
-*Développé avec ❤️ pour les équipes SecOps et Red Team.*
+Distribué sous la licence MIT. Voir `LICENSE`.

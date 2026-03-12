@@ -35,3 +35,12 @@ Cette méthodologie s'inspire des approches Red Team, Mandiant et des recommanda
 ### Phase 8 – Rapport Final et Remédiation
 - **Objectifs** : Consolidation des findings et priorisation des risques.
 - **Livrables** : Rapport détaillé, Executive Summary, Plan de remédiation.
+
+---
+
+## ⚙️ Hypothèses et Variables d’Audit
+
+- **Taille de l'infrastructure** : Adaptable (Petite/Moyenne/Grosse infra).
+- **Niveau d'accès** : Accès *Lecture Seule* privilégié (Read-Only) recommandé pour l'audit.
+- **Licences** : Requiert idéalement **Entra ID P1/P2** pour un accès complet aux logs.
+- **Environnement** : Firewall ouvert pour les flux Azure Connect / Sentinel.
